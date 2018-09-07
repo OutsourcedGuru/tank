@@ -202,7 +202,20 @@ I assume here that the Raspberry Pi Zero W has gone through its initial paces of
 2. Connect red to 4, black to 6 and blue to 8. On the Arduino end, red to 5V and black to Gnd in the POWER section and blue to 10 on the opposite side
 3. `sudo apt-get update`
 4. `sudo apt-get install python-pip`
-5. `pip install pyserial`
+5. `pip install pyserial` # Enough preparation for Phase 1
+6. `sudo apt-get install git`
+7. `mkdir ~/tmp && cd ~/tmp`
+8. `wget https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-armv6l.tar.xz`
+9. `tar -xvf *.xz`
+10. `cd node*l`
+11. `sudo cp -R * /usr/local/`
+12. `node --version`
+13. `cd ~/sites && rm -R ~/tmp` # Node.js and npm are now installed
+14. `sudo npm install -g express-generator`
+15. `express --ejs tank && cd tank && npm install`
+16. `DEBUG=tank:* npm start`
+17. `npm install --save raspi` # Adding serial support to web interface
+18. `npm install --save raspi-serial`
 
 ## Bibliography
 

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+<script>
+function handleClick() {
+  var w = window.innerWidth;
+  var mid_w = w / 2;
+  console.log('w:' + w + ', mid_w:' + mid_w);
+  var h = window.innerHeight;
+  var mid_h = h / 2;
+  console.log('h:' + h + ', mid_h:' + mid_h);
+  console.log('pageX:' + event.pageX + ', pageY:' + event.pageY);
+  var x = Math.round((event.pageX >= mid_w) ?
+    (100 * (event.pageX - mid_w) / mid_w) :
+     -1 * (100 * (mid_w - event.pageX) / mid_w));
+  var y = Math.round((event.pageY <= mid_h) ?
+    (100 * (mid_h - event.pageY) / mid_h) :
+     -1 * (100 * (event.pageY - mid_h) / mid_h));
+  if (y > 0 && y <  25)  y = 0;
+  if (y < 0 && y > -25)  y = 0;
+  if (x > 0 && x <  25)  x = 0;
+  if (x < 0 && x > -25)  x = 0;
+  var nLeft, nRight;
+  if (x == 0) {
+    // Driving straight, both motors run together and at the speed indicated by y as mapped into 0-255
+    nLeft = nRight = parseInt((y/100) * 255);
+  } else {
+    if (y == 0) {
+      // No y component but obviously an x, this is a turning situation
+      if (x > 67) {
+        // Hard turn, reverse the other motor as well
+        nLeft =   parseInt((y/100) * 255);
+        nRight =  -1 * nLeft;
+      } else if (x > 33) {
+        // Medium turn, stop the other motor
+        nLeft =   parseInt((y/100) * 255);
+        nRight =  0;
+      } else {
+        // Gradual turn, do it by differenting the two in the same direction
+        nLeft =   parseInt((y/100) * 255);
+        nRight =  parseInt(nLeft * ((100 - x)/100));
+      }
+    } else {
+      // Both reasonable x and y components seen so not a straight nor hard-turning situation
+      if (y > 0) {
+        nLeft =   parseInt((y/100) * 255);
+        if (x > 0) {
+          nRight =  parseInt(nLeft * ((100 - x)/100));
+        } else {
+          nRight =  parseInt(nLeft * ((100 + x)/100));
+        }
+      } else {
+        nLeft =   parseInt((y/100) * 255);
+        if (x > 0) {
+          nRight =  parseInt(nLeft * ((100 - x)/100));
+        } else {
+          nRight =  parseInt(nLeft * ((100 + x)/100));
+        }
+      }
+    }
+  }
+  var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
+  document.getElementById('commands').src = strURL;
+  //alert('X:' + x + '%, Y:' + y + '%, nLeft:' + nLeft + ', nRight:' + nRight);
+  return true;
+}
+</script>
+  </head>
+  <body style='margin:0; padding:0; background-image: url("http://tank.local:8080/?action=stream"); background-repeat: no-repeat; background-size: cover;'>
+    <img usemap="#controlmap" style='width: 100%; opacity: 0.80; filter:alpha(opacity=50);' src="/images/TankAppDashboard.png"></div>
+    <iframe id="commands" name="commands" src="" width="100%" height="40px" style="position: absolute; bottom: 140px; color: white"></iframe>
+    <div style='color: white; position: absolute; bottom: 100px; left: 40px;'>Touch the upper half to move forward</div>
+    <map name="controlmap">
+      <area shape="circle" coords="495,405,125" href="#" onClick="document.getElementById('commands').src='http://tank.local:3000/api/command?left=0&right=0';", title="Stop" />
+      <area shape="default" href="#" onClick="handleClick()" />
+    </map>
+  </body>
+</html>

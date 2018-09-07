@@ -14,7 +14,7 @@ A serial link and interface connects the two separate systems which all sit atop
 [x] In the first phase of the project, a simple Python script running on the Pi will send commands over the serial interface to the Arduino for steering.
 
 ### Phase 2
-[ ] In the second phase, a NodeJS web interface on the Pi will allow both the webcam stream to be viewed plus to control the tank, presumably from an iPhone.
+[x] In the second phase, a NodeJS web interface on the Pi will allow both the webcam stream to be viewed plus to control the tank, presumably from an iPhone.
 
 ### Phase 3
 [ ] In the third phase, individual frames from the camera will be analyzed to allow a NodeJS program to automamously steer the tank around a course.
@@ -51,7 +51,7 @@ This is a limited version of the schematic in that Fritzing doesn't yet have the
 
 |Description|Version|Author|Last Update|
 |:---|:---|:---|:---|
-|tank|v1.0.1|OutsourcedGuru|September 6, 2018|
+|tank|v1.0.2|OutsourcedGuru|September 6, 2018|
 
 |Donate||Cryptocurrency|
 |:-----:|---|:--------:|
