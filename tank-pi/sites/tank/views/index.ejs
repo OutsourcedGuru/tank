@@ -4,76 +4,108 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
 <script>
+function arcsin(x, y) {
+  return Math.abs(parseInt(
+    Math.asin(
+      // opposite over hypotenuse
+      x / Math.sqrt(Math.pow(x, 2) + Math.pow(-1 * y, 2))) *
+      // radians-to-degrees conversion at the end
+      180.0 / Math.PI
+  ));
+}
+
 function handleClick() {
-  var w = window.innerWidth;
-  var mid_w = w / 2;
-  console.log('w:' + w + ', mid_w:' + mid_w);
-  var h = window.innerHeight;
-  var mid_h = h / 2;
-  console.log('h:' + h + ', mid_h:' + mid_h);
-  console.log('pageX:' + event.pageX + ', pageY:' + event.pageY);
-  var x = Math.round((event.pageX >= mid_w) ?
-    (100 * (event.pageX - mid_w) / mid_w) :
-     -1 * (100 * (mid_w - event.pageX) / mid_w));
-  var y = Math.round((event.pageY <= mid_h) ?
-    (100 * (mid_h - event.pageY) / mid_h) :
-     -1 * (100 * (event.pageY - mid_h) / mid_h));
-  if (y > 0 && y <  25)  y = 0;
-  if (y < 0 && y > -25)  y = 0;
-  if (x > 0 && x <  25)  x = 0;
-  if (x < 0 && x > -25)  x = 0;
-  var nLeft, nRight;
-  if (x == 0) {
-    // Driving straight, both motors run together and at the speed indicated by y as mapped into 0-255
-    nLeft = nRight = parseInt((y/100) * 255);
-  } else {
-    if (y == 0) {
-      // No y component but obviously an x, this is a turning situation
-      if (x > 67) {
-        // Hard turn, reverse the other motor as well
-        nLeft =   parseInt((y/100) * 255);
-        nRight =  -1 * nLeft;
-      } else if (x > 33) {
-        // Medium turn, stop the other motor
-        nLeft =   parseInt((y/100) * 255);
-        nRight =  0;
-      } else {
-        // Gradual turn, do it by differenting the two in the same direction
-        nLeft =   parseInt((y/100) * 255);
-        nRight =  parseInt(nLeft * ((100 - x)/100));
-      }
-    } else {
-      // Both reasonable x and y components seen so not a straight nor hard-turning situation
-      if (y > 0) {
-        nLeft =   parseInt((y/100) * 255);
-        if (x > 0) {
-          nRight =  parseInt(nLeft * ((100 - x)/100));
-        } else {
-          nRight =  parseInt(nLeft * ((100 + x)/100));
-        }
-      } else {
-        nLeft =   parseInt((y/100) * 255);
-        if (x > 0) {
-          nRight =  parseInt(nLeft * ((100 - x)/100));
-        } else {
-          nRight =  parseInt(nLeft * ((100 + x)/100));
-        }
-      }
-    }
+  var w = window.innerWidth,    mid_w = w / 2,   mouseOffset_x = 5;
+  var h = window.innerHeight,   mid_h = h / 2,   mouseOffset_y = 21;
+  var x = event.pageX - mid_w - mouseOffset_x;
+  var y = event.pageY - mid_h - mouseOffset_y;
+  // y: -77 to 87 on the red circle = 25% power, -134=50%, -196=75%, -254=100%
+  // -77=0.25*255=-63; -194=0.5*255=-127; -134=0.75*255=-190; -254=-254;
+  // x: -80 to 80 on the red circle = 25% power, =50%, 310=100%
+  // -310 310; -196 196 half turn
+  if (-14 < x && x < 14) x = 0; if (-21 < y && y < 21) y = 0;
+  console.log(w + 'x' + h + '; center: ' + mid_w + ', ' + mid_h + '; mouse: ' + event.pageX + ', ' + event.pageY + '; x: ' + x + ', y: ' + y);
+  /*
+  ** --------------------------------------------------------------------
+  ** Stop [x] Reasonably done, but probably needs to be mapped
+  ** --------------------------------------------------------------------
+  */
+  if (Math.abs(x) < 80 && Math.abs(y) < 80) {
+    var strURL = 'http://tank.local:3000/api/command?left=0&right=0';
+    document.getElementById('commands').src = strURL;
+    return true;
   }
-  var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
-  document.getElementById('commands').src = strURL;
-  //alert('X:' + x + '%, Y:' + y + '%, nLeft:' + nLeft + ', nRight:' + nRight);
+  /*
+  ** --------------------------------------------------------------------
+  ** Straight-driving [ ] Needs to be mapped into 0-255 (overshooting)
+  ** --------------------------------------------------------------------
+  */
+  if (x == 0 && Math.abs(y)) {
+    nLeft = nRight = Math.abs(y);
+    if (y > 0) {nLeft *= -1; nRight *= -1;}
+    var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
+    document.getElementById('commands').src = strURL;
+    return true;
+  }
+  /*
+  ** --------------------------------------------------------------------
+  ** Turn-in-place (along X-axis of graph) [x] Reasonably done, needs
+  ** to be mapped
+  ** --------------------------------------------------------------------
+  */
+  if (y == 0 && Math.abs(x)) {
+    if (Math.abs(x) > 240) {
+      console.log('Full turn');
+      if (x > 0) {nLeft = 255; nRight = -255;} else {nLeft = -255; nRight = 255;}
+    } else {
+      if (x > 0) {nLeft = 255; nRight =    0;} else {nLeft =    0; nRight = 255;}
+    }
+    var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
+    document.getElementById('commands').src = strURL;
+    return true;
+  }
+  /*
+  ** --------------------------------------------------------------------
+  ** Gradual turns
+  ** --------------------------------------------------------------------
+  */
+  if (Math.abs(x) && Math.abs(y)) {
+    var adjustedX = parseInt((x / 320) * 240);
+    var angleArcsin = arcsin(adjustedX, y);
+    console.log('Gradual turn with x before: ' + x + ' and after: ' + adjustedX + ' and arcsin: ' + angleArcsin);
+    if ((x > 0 && y < 0) || (x < 0 && y > 0)) {
+      console.log('QI/III');
+      console.log('nLeft: ' + 
+        (-1 * y).toString() +
+        ', nRight: ' +
+        parseInt(-1 * y * (100 - angleArcsin) / 100).toString());
+      nLeft =    -1 * y;
+      nRight =   parseInt(-1 * y * (100 - angleArcsin) / 100);
+    } else {
+      console.log('QII/IV');
+      console.log('nLeft: ' +
+        parseInt(-1 * y * (100 - angleArcsin) / 100).toString() +
+        ', nRight: ' + (-1 * y).toString()
+      );
+      nRight =   -1 * y;
+      nLeft =    parseInt(-1 * y * (100 - angleArcsin) / 100);
+    }
+    var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
+    document.getElementById('commands').src = strURL;
+    return true;
+  }
+
+  // If we made it to here, do nothing
   return true;
 }
 </script>
   </head>
   <body style='margin:0; padding:0; background-image: url("http://tank.local:8080/?action=stream"); background-repeat: no-repeat; background-size: cover;'>
     <img usemap="#controlmap" style='width: 100%; opacity: 0.80; filter:alpha(opacity=50);' src="/images/TankAppDashboard.png"></div>
-    <iframe id="commands" name="commands" src="" width="100%" height="40px" style="position: absolute; bottom: 140px; color: white"></iframe>
-    <div style='color: white; position: absolute; bottom: 100px; left: 40px;'>Touch the upper half to move forward</div>
+    <iframe id="commands" name="commands" src="" width="35%" height="60px" style="position: absolute; bottom: 3px; left: 1px; color: white"></iframe>
+    <div style='color: white; position: absolute; bottom: 80px; left: 3px;'>Touch the upper half to move forward</div>
     <map name="controlmap">
-      <area shape="circle" coords="495,405,125" href="#" onClick="document.getElementById('commands').src='http://tank.local:3000/api/command?left=0&right=0';", title="Stop" />
+      <!--area shape="circle" coords="495,405,125" href="#" onClick="document.getElementById('commands').src='http://tank.local:3000/api/command?left=0&right=0';", title="Stop" /-->
       <area shape="default" href="#" onClick="handleClick()" />
     </map>
   </body>

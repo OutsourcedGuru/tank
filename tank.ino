@@ -20,10 +20,12 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
-OseppTBMotor Motor1(12, 11);
-OseppTBMotor Motor2(8, 3);
-#define leftMotor Motor1
-#define rightMotor Motor2
+//OseppTBMotor Motor1(12, 11);
+//OseppTBMotor Motor2(8, 3);
+OseppTBMotor Motor3(7, 6);
+OseppTBMotor Motor4(4, 5);
+#define leftMotor Motor3
+#define rightMotor Motor4
 int leftSpeed = 0;
 int rightSpeed = 0;
 SoftwareSerial portConsole(0, 1);

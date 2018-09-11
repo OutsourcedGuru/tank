@@ -16,7 +16,9 @@ router.get('/api/command', function(req, res, next) {
   raspi.init(function() {
     var portArduino = new Serial({portId: '/dev/serial0', baudRate: 4800});
     portArduino.open(function(){
-      var strCommand = 'L' + req.query.left + ' R' + req.query.right + '\n'; 
+      var strCommand =
+        'L' + parseInt(Math.round(parseFloat(req.query.left))).toString() +
+        ' R' + parseInt(Math.round(parseFloat(req.query.right))).toString() + '\n'; 
       portArduino.write(strCommand);
       console.log('Sent: ' + strCommand);
       res.json({"status": "ok", "left": req.query.left, "right": req.query.right});

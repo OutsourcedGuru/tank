@@ -217,6 +217,19 @@ I assume here that the Raspberry Pi Zero W has gone through its initial paces of
 17. `npm install --save raspi` # Adding serial support to web interface
 18. `npm install --save raspi-serial`
 
+## Lane-recognition transforms
+
+The series of steps to accomplish the goal for this project are as follows: [10](#10)
+
+1. Compute the camera calibration matrix and distortion coefficients.
+2. Apply a distortion correction to raw images.
+3. Use color transforms, gradients, etc., to create a thresholded binary image.
+4. Apply a perspective transform to generate a “bird’s-eye view” of the image.
+5. Detect lane pixels and fit to find the lane boundary.
+6. Determine the curvature of the lane and vehicle position with respect to center.
+7. Warp the detected lane boundaries back onto the original image and display numerical estimation of lane curvature and vehicle position.
+
+
 ## Bibliography
 
 #### <a name="1"></a>1. [Arduino Serial Examples](https://www.arduino.cc/en/Tutorial/SoftwareSerialExample)
@@ -236,3 +249,5 @@ I assume here that the Raspberry Pi Zero W has gone through its initial paces of
 #### <a name="8"></a>8. [parseInt()](https://www.arduino.cc/en/Reference/ParseInt)
 
 #### <a name="9"></a>9. [ReadASCIIString example](https://www.arduino.cc/en/Tutorial/ReadASCIIString)
+
+#### <a name="10"></a>10. [Advanced Land Detection for Autonomous Vehicles](https://towardsdatascience.com/advanced-lane-detection-for-autonomous-vehicles-using-computer-vision-techniques-f229e4245e41)

@@ -1,1 +1,6 @@
 .DS_Store
+node_modules
+*.log
+tank-pi/sites/autonomous/public/images/snapshot.jpg
+tank-pi/sites/autonomous/public/images/find-edges.jpg
+
