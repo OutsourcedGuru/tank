@@ -1,5 +1,6 @@
 var async =       require('async');
 var config =      require('./config');
+var debug =       require('debug')('router');
 var express =     require('express');
 var wrappers =    require('./wrappers');
 var router =      express.Router();
@@ -15,10 +16,10 @@ router.get('/', function(req, res, next) {
     wrappers.writeOutput
     ], function(errWaterfall, result) {
       if (errWaterfall) {console.error('Waterfall returned err: ', errWaterfall);}
-      if (result) {console.log('Waterfall result: ' + result);}
+      if (result) {debug('Waterfall result: ' + result);}
       res.render('index', { title: config.title });
-    }
-  ) // async.waterfall()
-}); // router.get()
+    } // callback from async.waterfall()
+  )   // async.waterfall()
+});   // router.get()
 
 module.exports = router;
