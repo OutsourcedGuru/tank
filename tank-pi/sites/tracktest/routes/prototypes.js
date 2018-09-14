@@ -75,4 +75,3 @@ var Jimp =        require('jimp');
 
 }());
 
-module.exports = Jimp.prototype.markCenter;

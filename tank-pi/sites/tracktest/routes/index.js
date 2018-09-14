@@ -39,7 +39,8 @@ router.get('/', function(req, res, next) {
                 console.log('slopeRight1st: ' + rightFirstSlopeSegment + ' and slopeRight2nd: ' + rightSecondSlopeSegment + ' with difference: ' + rightDiff);
                 var trend = (Math.abs(leftDiff) < Math.abs(rightDiff)) ? leftFirstSlopeSegment : rightFirstSlopeSegment;
                 // Unsure if this should be (90-trend) or half of this angle. Also unsure of whether or not I should be subtracting this from 90.
-                console.log('Trend: ' + parseInt((90 - trend) / 2) + ' degrees right of centerline');
+                //console.log('Trend: ' + parseInt((90 - trend) / 2) + ' degrees right of centerline');
+                console.log('Trend: ' + trend + ' degrees right of centerline');
                 imgSampleThree.write(           config.fileFindEdges,        function(errWrite) {
                   res.render('index', { title: config.title });
                 });          // write()
