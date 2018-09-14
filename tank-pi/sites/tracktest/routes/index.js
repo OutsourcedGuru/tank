@@ -38,7 +38,7 @@ router.get('/', function(req, res, next) {
                 var rightDiff =                rightFirstSlopeSegment - rightSecondSlopeSegment;
                 console.log('slopeRight1st: ' + rightFirstSlopeSegment + ' and slopeRight2nd: ' + rightSecondSlopeSegment + ' with difference: ' + rightDiff);
                 var trend = (Math.abs(leftDiff) < Math.abs(rightDiff)) ? leftFirstSlopeSegment : rightFirstSlopeSegment;
-                // Unsure if this should be (90-trend) or half of this angle
+                // Unsure if this should be (90-trend) or half of this angle. Also unsure of whether or not I should be subtracting this from 90.
                 console.log('Trend: ' + parseInt((90 - trend) / 2) + ' degrees right of centerline');
                 imgSampleThree.write(           config.fileFindEdges,        function(errWrite) {
                   res.render('index', { title: config.title });
@@ -55,3 +55,19 @@ router.get('/', function(req, res, next) {
 });                          // router.get()
 
 module.exports = router;
+
+/*
+** A description of the slope determination
+**
+** Imagine the following trend line as created from the samples taken at lines 1 (58% of height) and 2 (45% of height) of the image.
+** The vertical line would be the centerline as marked by the + in the After graphic. The top of the line represents the location of
+** the masking tape on the left at the second sample point; the bottom is the first. Subtracting the X component of each gives us
+** what's called the "run" or the adjacent side of a 90-degree triangle whose hypotenuse is that trend line. Subtracting the Y
+** components gives us the "rise". Dividing run/rise and adjusting radians to degrees gives us the angle.
+**
+** |    /
+** |   /
+** |  /
+** | /
+** .
+*/
