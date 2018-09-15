@@ -1,5 +1,5 @@
 var config =      require('./config');
-var debug =       require('debug')('wrappers');
+var debug =       require('debug')('wrappers:');
 var fs =          require('fs');
 var Jimp =        require('jimp');
 var logistics =   require('./logistics');

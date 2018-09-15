@@ -1,5 +1,5 @@
 var config =      require('./config');
-var debug =       require('debug')('prototypes');
+var debug =       require('debug')('prototypes:');
 var Jimp =        require('jimp');
 
 /*
