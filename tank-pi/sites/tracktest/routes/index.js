@@ -13,6 +13,7 @@ router.get('/', function(req, res, next) {
     wrappers.markFirstSample,
     wrappers.markSecondSample,
     wrappers.markThirdSample,
+    wrappers.markDirection,
     wrappers.writeOutput
     ], function(errWaterfall, result) {
       if (errWaterfall) {console.error('Waterfall returned err: ', errWaterfall);}

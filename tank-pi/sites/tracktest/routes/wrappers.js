@@ -75,6 +75,12 @@ exports.markThirdSample = function(img, callback) {
   });
 } // markThirdSample()
 
+exports.markDirection = function(imgRaw, callback) {
+  imgRaw.markDirection(function(err, image) {
+    callback(null, image);
+  });
+} // markDirection()
+
 exports.writeOutput = function(img, callback) {
   img.write(config.fileFindEdges, function(err) {
     if (err) {console.error('writeOutput(): ' + err); callback(err); return;}

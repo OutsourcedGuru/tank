@@ -15,3 +15,4 @@ exports.rightFirstSlopeSegment =  undefined;
 exports.rightSecondSlopeSegment = undefined;
 exports.rightDiff =               undefined;
 exports.trend =                   undefined;
+exports.direction =               undefined;

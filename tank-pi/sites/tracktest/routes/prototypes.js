@@ -1,6 +1,7 @@
 var config =      require('./config');
 var debug =       require('debug')('prototypes:');
 var Jimp =        require('jimp');
+var logistics =   require('./logistics');
 
 /*
 ** Most of these are prototype add-ons to the existing Jimp module.
@@ -35,6 +36,27 @@ var Jimp =        require('jimp');
       });
     } catch(err) {console.error('markCenter() Jimp.read() -> catch(): ' + err)};
   }; // markCenter()
+
+  Jimp.prototype.markDirection = function(cb) {
+    try {
+      Jimp.read('./public/images/center-mark-mask.jpg', (errRead, imgMask) => {
+        if (errRead) console.error('Jimp.read(): ' + errRead);
+        var radiansTrend =    logistics.trend * Math.PI / 180.0;
+        var midX =            parseInt((this.bitmap.width / 2) +  (config.trendLineLength * Math.cos(radiansTrend * config.trendAngleMultiplier)));
+        var midY =            parseInt((this.bitmap.height / 2) + (-1 * config.trendLineLength * Math.sin(radiansTrend * config.trendAngleMultiplier)));
+        logistics.direction = 90 - parseInt((radiansTrend * config.trendAngleMultiplier) * 180.0 / Math.PI);
+        debug('radiansTrend: ' + radiansTrend);
+        debug('cos: ' + (config.trendLineLength * Math.cos(radiansTrend * config.trendAngleMultiplier)));
+        debug('sin: ' + (-1 * config.trendLineLength * Math.sin(radiansTrend * config.trendAngleMultiplier)));
+        debug('midX: ' + midX + ', midY: ' + midY);
+        debug('direction: ' + logistics.direction + ' degrees from centerline');
+        this.mask(imgMask, midX - parseInt(imgMask.bitmap.width / 2), midY - parseInt(imgMask.bitmap.height / 2), function(errMask, imgMasked) {
+          if (errMask) console.error('this.mask(): ' + errMask);
+          cb(null, imgMasked);
+        })
+      });
+    } catch(err) {console.error('markDirection() Jimp.read() -> catch(): ' + err)};
+  }; // markDirection()
 
   Jimp.prototype.markSample = function(x, y, cb) {
     var colorTest =   undefined;
