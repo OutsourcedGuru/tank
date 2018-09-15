@@ -14,6 +14,7 @@ router.get('/', function(req, res, next) {
     wrappers.markSecondSample,
     wrappers.markThirdSample,
     wrappers.markDirection,
+    wrappers.sendCommand,
     wrappers.writeOutput
     ], function(errWaterfall, result) {
       if (errWaterfall) {console.error('Waterfall returned err: ', errWaterfall);}

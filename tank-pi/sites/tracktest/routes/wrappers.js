@@ -4,6 +4,7 @@ var fs =          require('fs');
 var Jimp =        require('jimp');
 var logistics =   require('./logistics');
 var prototypes =  require('./prototypes');
+var serial =      require('./serial')
 
 /*
 ** These are a series of async.waterfall()—compatible wrappers for the functions
@@ -21,68 +22,96 @@ exports.initFindEdgesGraphic = function(callback) {
 
 exports.readSnapshot = function(callback) {
    try {
-      Jimp.read(config.fileSnapshot, (errRead, image) => {
+      Jimp.read(config.fileSnapshot, (errRead, imgOut) => {
         if (errRead) {console.error('readSnapshot(): ' + errRead); callback(errRead); return;}
         logistics.sampleX =   0;
-        logistics.sampleY1 =  parseInt(image.bitmap.height * 0.58);
-        logistics.sampleY2 =  parseInt(image.bitmap.height * 0.45);
-        logistics.sampleY3 =  parseInt(image.bitmap.height * 0.38);
-        callback(null, image);
+        logistics.imgWidth =  imgOut.bitmap.width;
+        logistics.imgHeight = imgOut.bitmap.height;
+        logistics.sampleY1 =  parseInt(logistics.imgHeight * config.firstY);
+        logistics.sampleY2 =  parseInt(logistics.imgHeight * config.secondY);
+        logistics.sampleY3 =  parseInt(logistics.imgHeight * config.thirdY);
+        callback(null, imgOut);
       });
     } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
 } // readSnapshot()
 
-exports.markCenter = function(imgRaw, callback) {
-  imgRaw.markCenter(function(err, image) {
-    callback(null, image);
+exports.markCenter = function(imgIn, callback) {
+  imgIn.markCenter(function(err, imgOut) {
+    callback(null, imgOut);
   });
 } // markCenter()
 
-exports.markFirstSample = function(img, callback) {
-  img.markSample(logistics.sampleX, logistics.sampleY1, function(err, image, nLeft, nRight) {
+exports.markFirstSample = function(imgIn, callback) {
+  imgIn.markSample(logistics.sampleX, logistics.sampleY1, function(err, imgOut, nLeft, nRight) {
     logistics.nLeft1 =   nLeft;
     logistics.nRight1 =  nRight;
-    callback(null, image);
+    callback(null, imgOut);
   });
 } // markFirstSample()
 
-exports.markSecondSample = function(img, callback) {
-  img.markSample(logistics.sampleX, logistics.sampleY2, function(err, image, nLeft, nRight) {
+exports.markSecondSample = function(imgIn, callback) {
+  imgIn.markSample(logistics.sampleX, logistics.sampleY2, function(err, imgOut, nLeft, nRight) {
     logistics.nLeft2 =   nLeft;
     logistics.nRight2 =  nRight;
-    callback(null, image);
+    callback(null, imgOut);
   });
 } // markSecondSample()
 
-exports.markThirdSample = function(img, callback) {
-  img.markSample(logistics.sampleX, logistics.sampleY3, function(err, image, nLeft, nRight) {
+exports.markThirdSample = function(imgIn, callback) {
+  imgIn.markSample(logistics.sampleX, logistics.sampleY3, function(err, imgOut, nLeft, nRight) {
     logistics.nLeft3 =   nLeft;
     logistics.nRight3 =  nRight;
     debug('nLeft: ' + logistics.nLeft1 + '/' + logistics.nLeft2 + '/' + logistics.nLeft3 + ', nRight: ' + logistics.nRight1 + '/' + logistics.nRight2 + '/' + logistics.nRight3);
-    logistics.leftFirstSlopeSegment =    parseInt(Math.atan((logistics.nLeft1 - logistics.nLeft2) / parseInt(image.bitmap.height * (0.58 - 0.45))) * 180 / Math.PI);
-    logistics.leftSecondSlopeSegment =   parseInt(Math.atan((logistics.nLeft2 - logistics.nLeft3) / parseInt(image.bitmap.height * (0.58 - 0.45))) * 180 / Math.PI);
+    logistics.leftFirstSlopeSegment =    parseInt(Math.atan((logistics.nLeft1 - logistics.nLeft2) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
+    logistics.leftSecondSlopeSegment =   parseInt(Math.atan((logistics.nLeft2 - logistics.nLeft3) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
     logistics.leftDiff =                 logistics.leftFirstSlopeSegment - logistics.leftSecondSlopeSegment;
     debug('slopeLeft1st: ' + logistics.leftFirstSlopeSegment + ' and slopeLeft2nd: ' + logistics.leftSecondSlopeSegment + ' with difference: ' + logistics.leftDiff);
-    logistics.rightFirstSlopeSegment =   parseInt(Math.atan((logistics.nRight2 - logistics.nRight1) / parseInt(image.bitmap.height * (0.58 - 0.45))) * 180 / Math.PI);
-    logistics.rightSecondSlopeSegment =  parseInt(Math.atan((logistics.nRight3 - logistics.nRight2) / parseInt(image.bitmap.height * (0.58 - 0.45))) * 180 / Math.PI);
+    logistics.rightFirstSlopeSegment =   parseInt(Math.atan((logistics.nRight2 - logistics.nRight1) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
+    logistics.rightSecondSlopeSegment =  parseInt(Math.atan((logistics.nRight3 - logistics.nRight2) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
     logistics.rightDiff =                logistics.rightFirstSlopeSegment - logistics.rightSecondSlopeSegment;
     debug('slopeRight1st: ' + logistics.rightFirstSlopeSegment + ' and slopeRight2nd: ' + logistics.rightSecondSlopeSegment + ' with difference: ' + logistics.rightDiff);
-    logistics.trend = (Math.abs(logistics.leftDiff) < Math.abs(logistics.rightDiff)) ? logistics.leftFirstSlopeSegment : logistics.rightFirstSlopeSegment;
-    // Unsure if this should be (90-trend) or half of this angle. Also unsure of whether or not I should be subtracting this from 90.
-    //debug('Trend: ' + parseInt((90 - logistics.trend) / 2) + ' degrees right of centerline');
-    debug('Trend: ' + logistics.trend + ' degrees right of centerline');
-    callback(null, image);
+    debug('Straight: ' + (Math.abs(logistics.leftDiff + logistics.rightDiff) < 5));
+    if (Math.abs(logistics.leftDiff + logistics.rightDiff) < 5) {
+      logistics.trend = 90;
+    } else {
+      logistics.trend = (Math.abs(logistics.leftDiff) < Math.abs(logistics.rightDiff)) ? logistics.leftFirstSlopeSegment : logistics.rightFirstSlopeSegment;
+    }
+    if (Math.abs(logistics.trend) > config.trendSanityCheck && logistics.trend < 90) {
+      // Looks like we missed some data points and the trend, as calculated, is off
+      // Example: nLeft: 10/293/219, nRight: -2/309/51
+      // Interpretation: We missed the first data point at 10 (found centerline instead of far left), for example
+      // Attempt: trend based upon the other two left-side points which were closer together
+      debug('---Trend [' + logistics.trend + '] over sanity check [' + config.trendSanityCheck + '], trying again---');
+      debug('nLeft: ' + logistics.nLeft1 + '/' + logistics.nLeft2 + '/' + logistics.nLeft3 + ', nRight: ' + logistics.nRight1 + '/' + logistics.nRight2 + '/' + logistics.nRight3);
+      logistics.leftGreatSlopeSegment =    parseInt(Math.atan(Math.abs(logistics.nLeft1 - logistics.nLeft3) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
+      logistics.rightGreatSlopeSegment =   parseInt(Math.atan(Math.abs(logistics.nRight1 - logistics.nRight3) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
+      debug('slopeGreatLeft: ' + logistics.leftGreatSlopeSegment + ' and slopeGreatRight: ' + logistics.rightGreatSlopeSegment);
+      if (logistics.leftGreatSlopeSegment && logistics.rightGreatSlopeSegment) {
+        logistics.trend = (Math.abs(logistics.leftGreatSlopeSegment) < Math.abs(logistics.rightGreatSlopeSegment)) ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
+      } else {
+        // One of them was zero, so use the other
+        logistics.trend = logistics.leftGreatSlopeSegment ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
+      }
+    }
+    debug('Trend: ' + logistics.trend + ' degrees from horizontal');
+    callback(null, imgOut);
   });
 } // markThirdSample()
 
-exports.markDirection = function(imgRaw, callback) {
-  imgRaw.markDirection(function(err, image) {
+exports.markDirection = function(imgIn, callback) {
+  imgIn.markDirection(function(err, imgOut) {
+    callback(null, imgOut);
+  });
+} // markDirection()
+
+exports.sendCommand = function(image, callback) {
+  serial.sendCommand(function(err) {
     callback(null, image);
   });
 } // markDirection()
 
-exports.writeOutput = function(img, callback) {
-  img.write(config.fileFindEdges, function(err) {
+exports.writeOutput = function(imgIn, callback) {
+  imgIn.write(config.fileFindEdges, function(err) {
     if (err) {console.error('writeOutput(): ' + err); callback(err); return;}
     callback(null, 'Successful series');
   });
