@@ -5,8 +5,22 @@ var fs =          require('fs');
 var http =        require('http');
 var logistics =   require('./logistics');
 
+exports.sendStop = function(callback) {
+  debug('Sending stop command...');
+  var options = {hostname: 'tank.local',  port: 3000,  path: '/api/command?left=0&right=0',  method: 'GET',  timeout: 5000};
+  try {
+    http.get(options, function(resp) {
+      resp.setEncoding('utf8');
+      var data = '';
+      resp.on('data',   function(chunk)  {data += chunk;});
+      resp.on('error',  function(err)    {debug(err); callback(null); return;});
+      resp.on('end',    function()       {debug(data); callback(null); return;});
+    });
+  } catch(err) {debug(err); callback(null); return;}
+} // sendStop()
+
 exports.sendCommand = function(callback) {
-  debug('Serial: finding tank...');
+  debug('Finding tank...');
   dns.lookup(config.tankHostname, function(err) {
     if (err) {debug(err); callback(null); return;}
     var w = logistics.imgWidth,   mid_w = w / 2,   mouseOffset_x = 0;

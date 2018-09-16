@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body style='margin:0; padding:0;'>
+  <h1><%= title %></h1>
+  <table border="1">
+    <tr>
+      <th width="320px">Stream:</th>
+    </tr>
+    <tr>
+      <td><img src="<%= url %>" width="320" height="240"></td>
+    </tr>
+  </table>
+  <p>&nbsp;</p>
+  <span id="endButton" class="button" onClick='document.location = "/end";'>End Race</span><span id="startButton" class="button" onClick='document.location = "/start";'>Start Race</span><br/>
+  <span id="resumeButton" class="button" onClick='document.location = "/";'>Resume</span>
+</body>
+</html>

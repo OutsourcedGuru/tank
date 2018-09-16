@@ -6,3 +6,50 @@ body {
 a {
   color: #00B7FF;
 }
+
+.button {
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+  border-bottom-left-radius: 15px;
+  display: inline-block;
+  cursor: pointer;
+  font-family: Arial;
+  font-size: 17px;
+  padding: 7px 25px;
+  margin-left: 20px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  background-position: initial initial;
+  background-repeat: initial initial;
+}
+
+#pauseButton, #resumeButton {
+  -webkit-box-shadow: rgb(137, 149, 153) 3px 4px 0px 0px;
+  box-shadow: rgb(137, 149, 153) 3px 4px 0px 0px;
+  background-image: linear-gradient(rgb(237, 237, 237) 5%, rgb(186, 177, 186) 100%);
+  background-color: rgb(237, 237, 237);
+  border: 1px solid rgb(214, 188, 214);
+  color: rgb(58, 138, 158);
+  text-shadow: rgb(225, 226, 237) 0px 1px 0px;
+}
+
+#endButton {
+  -webkit-box-shadow: rgb(138, 42, 33) 3px 4px 0px 0px;
+  box-shadow: rgb(138, 42, 33) 3px 4px 0px 0px;
+  background-image: linear-gradient(rgb(198, 45, 31) 5%, rgb(242, 68, 55) 100%);
+  background-color: rgb(198, 45, 31);
+  border: 1px solid rgb(208, 39, 24);
+  color: rgb(255, 255, 255);
+  text-shadow: rgb(129, 14, 5) 0px 1px 0px;
+}
+
+#startButton {
+  -webkit-box-shadow: rgb(42, 138, 33) 3px 4px 0px 0px;
+  box-shadow: rgb(42, 138, 33) 3px 4px 0px 0px;
+  background-image: linear-gradient(rgb(45, 198, 31) 5%, rgb(68, 242, 55) 100%);
+  background-color: rgb(45, 198, 31);
+  border: 1px solid rgb(39, 208, 24);
+  color: rgb(255, 255, 255);
+  text-shadow: rgb(14, 129, 5) 0px 1px 0px;
+}

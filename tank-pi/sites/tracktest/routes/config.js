@@ -1,5 +1,6 @@
 exports.title =                 'Autonomous Tank - tracktest';
 exports.tankURL =               'http://tank.local:8080/?action=snapshot';
+exports.tankStreamURL =         'http://tank.local:8080/?action=stream';
 exports.tankHostname =          'tank.local';
 exports.fileNoImage =           './public/images/no-image.jpg';
 exports.fileFindEdges =         './public/images/find-edges.jpg';
