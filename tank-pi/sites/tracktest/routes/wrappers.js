@@ -63,11 +63,11 @@ exports.markThirdSample = function(imgIn, callback) {
     logistics.nRight3 =  nRight;
     debug('nLeft: ' + logistics.nLeft1 + '/' + logistics.nLeft2 + '/' + logistics.nLeft3 + ', nRight: ' + logistics.nRight1 + '/' + logistics.nRight2 + '/' + logistics.nRight3);
     logistics.leftFirstSlopeSegment =    parseInt(Math.atan((logistics.nLeft1 - logistics.nLeft2) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
-    logistics.leftSecondSlopeSegment =   parseInt(Math.atan((logistics.nLeft2 - logistics.nLeft3) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
+    logistics.leftSecondSlopeSegment =   parseInt(Math.atan((logistics.nLeft2 - logistics.nLeft3) / parseInt(logistics.imgHeight * (config.secondY - config.thirdY))) * 180 / Math.PI);
     logistics.leftDiff =                 logistics.leftFirstSlopeSegment - logistics.leftSecondSlopeSegment;
     debug('slopeLeft1st: ' + logistics.leftFirstSlopeSegment + ' and slopeLeft2nd: ' + logistics.leftSecondSlopeSegment + ' with difference: ' + logistics.leftDiff);
     logistics.rightFirstSlopeSegment =   parseInt(Math.atan((logistics.nRight2 - logistics.nRight1) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
-    logistics.rightSecondSlopeSegment =  parseInt(Math.atan((logistics.nRight3 - logistics.nRight2) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
+    logistics.rightSecondSlopeSegment =  parseInt(Math.atan((logistics.nRight3 - logistics.nRight2) / parseInt(logistics.imgHeight * (config.secondY - config.thirdY))) * 180 / Math.PI);
     logistics.rightDiff =                logistics.rightSecondSlopeSegment - logistics.rightFirstSlopeSegment;
     debug('slopeRight1st: ' + logistics.rightFirstSlopeSegment + ' and slopeRight2nd: ' + logistics.rightSecondSlopeSegment + ' with difference: ' + logistics.rightDiff);
     debug('Straight: ' + (Math.abs(logistics.leftDiff + logistics.rightDiff) < 5));
@@ -76,7 +76,7 @@ exports.markThirdSample = function(imgIn, callback) {
     } else {
       logistics.trend = (Math.abs(logistics.leftDiff) < Math.abs(logistics.rightDiff)) ? logistics.leftFirstSlopeSegment : logistics.rightFirstSlopeSegment;
     }
-    if (Math.abs(logistics.trend) > config.trendSanityCheck && logistics.trend < 90) {
+    if ((Math.abs(logistics.trend) > config.trendSanityCheck && logistics.trend < 90) || isNaN(logistics.trend)) {
       // Looks like we missed some data points and the trend, as calculated, is off
       // Example: nLeft: 10/293/219, nRight: -2/309/51
       // Interpretation: We missed the first data point at 10 (found centerline instead of far left), for example
@@ -87,13 +87,33 @@ exports.markThirdSample = function(imgIn, callback) {
       logistics.rightGreatSlopeSegment =   parseInt(Math.atan(Math.abs(logistics.nRight1 - logistics.nRight3) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
       debug('slopeGreatLeft: ' + logistics.leftGreatSlopeSegment + ' and slopeGreatRight: ' + logistics.rightGreatSlopeSegment);
       if (logistics.leftGreatSlopeSegment && logistics.rightGreatSlopeSegment) {
-        logistics.trend = 90 - (Math.abs(logistics.leftGreatSlopeSegment) < Math.abs(logistics.rightGreatSlopeSegment)) ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
+        logistics.trend = 90 - (Math.abs(logistics.leftGreatSlopeSegment) < Math.abs(logistics.rightGreatSlopeSegment) ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment);
       } else {
-        // One of them was zero, so use the other
-        logistics.trend = 90 - logistics.leftGreatSlopeSegment ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
+        if (isNaN(logistics.trend)) {
+          debug('---Trend [' + logistics.trend + '] == NaN, trying again---');
+          if (isNaN(logistics.nLeft1)) {
+            logistics.leftDiff = parseInt(Math.atan((logistics.nLeft2 - logistics.nLeft3) / parseInt(logistics.imgHeight * (config.secondY - config.thirdY))) * 180 / Math.PI);
+          } else if (isNaN(logistics.nLeft2)) {
+            logistics.leftDiff = parseInt(Math.atan((logistics.nLeft1 - logistics.nLeft3) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
+          } else if (isNaN(logistics.nLeft3)) {
+            logistics.leftDiff = parseInt(Math.atan((logistics.nLeft1 - logistics.nLeft2) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
+          }
+          if (isNaN(logistics.nRight1)) {
+            logistics.rightFirstSlopeSegment = parseInt(Math.atan((logistics.nRight3 - logistics.nRight2) / parseInt(logistics.imgHeight * (config.secondY - config.thirdY))) * 180 / Math.PI);
+          } else if (isNaN(logistics.nRight2)) {
+            logistics.rightFirstSlopeSegment = parseInt(Math.atan((logistics.nRight3 - logistics.nRight1) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
+          } else if (isNaN(logistics.nRight3)) {
+            logistics.rightFirstSlopeSegment = parseInt(Math.atan((logistics.nRight2 - logistics.nRight1) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
+          }
+          debug('Left: ' + logistics.leftFirstSlopeSegment + ', Right: ' + logistics.rightFirstSlopeSegment + ' combined: ' + parseInt(logistics.leftFirstSlopeSegment + logistics.rightFirstSlopeSegment));
+          logistics.trend = 90 - parseInt(logistics.leftFirstSlopeSegment + logistics.rightFirstSlopeSegment);
+        } else {
+          // One of them was zero, so use the other
+          logistics.trend = 90 - (logistics.leftGreatSlopeSegment ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment);
+        }
       }
     }
-    debug('Trend: ' + logistics.trend + ' degrees from centerline');
+    debug('Trend: ' + logistics.trend + ' degrees from horizontal');
     callback(null, imgOut);
   });
 } // markThirdSample()

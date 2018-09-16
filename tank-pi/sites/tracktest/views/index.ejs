@@ -2,6 +2,9 @@
 <html>
   <head>
     <title><%= title %></title>
+    <% if (reload > 0) { %>
+    <meta http-equiv="refresh" content="<%= reload%>; url=/">
+    <% } %>
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body style='margin:0; padding:0;'>

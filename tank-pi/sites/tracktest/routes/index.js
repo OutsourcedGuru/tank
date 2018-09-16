@@ -21,7 +21,7 @@ router.get('/', function(req, res, next) {
     ], function(errWaterfall, result) {
       if (errWaterfall) {console.error('Waterfall returned err: ', errWaterfall);}
       if (result) {debug('Waterfall result: ' + result);}
-      res.render('index', {title: config.title});
+      res.render('index', {title: config.title, reload: config.reloadSeconds});
     } // callback from async.waterfall()
   )   // async.waterfall()
 });   // get('/')
