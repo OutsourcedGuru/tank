@@ -40,17 +40,19 @@ var logistics =   require('./logistics');
   Jimp.prototype.markDirection = function(cb) {
     // Unsure if this should be (90-trend) or half of this angle. Also unsure of whether or not I should be subtracting this from 90.
     //debug('Trend: ' + parseInt((90 - logistics.trend) / 2) + ' degrees right of centerline');
+    // Definitively: The logistics.trend value is the degree from the centerline, as measured at the top.
     try {
       Jimp.read('./public/images/center-mark-mask.jpg', (errRead, imgMask) => {
         if (errRead) console.error('Jimp.read(): ' + errRead);
-        var radiansTrend =    logistics.trend * Math.PI / 180.0;
+        var radiansTrend =    (90 - logistics.trend) * Math.PI / 180.0;
         var midX =            parseInt((this.bitmap.width / 2) +  (config.trendLineLength * Math.cos(radiansTrend * config.trendAngleMultiplier)));
         var midY =            parseInt((this.bitmap.height / 2) + (-1 * config.trendLineLength * Math.sin(radiansTrend * config.trendAngleMultiplier)));
-        logistics.direction = 90 - parseInt((radiansTrend * config.trendAngleMultiplier) * 180.0 / Math.PI);
-        debug('radiansTrend: ' + radiansTrend);
-        debug('cos: ' + (config.trendLineLength * Math.cos(radiansTrend * config.trendAngleMultiplier)));
-        debug('sin: ' + (-1 * config.trendLineLength * Math.sin(radiansTrend * config.trendAngleMultiplier)));
-        debug('midX: ' + midX + ', midY: ' + midY);
+        // logistics.direction = 90 - parseInt((radiansTrend * config.trendAngleMultiplier) * 180.0 / Math.PI);
+        // debug('radiansTrend: ' + radiansTrend);
+        // debug('cos: ' + (config.trendLineLength * Math.cos(radiansTrend * config.trendAngleMultiplier)));
+        // debug('sin: ' + (-1 * config.trendLineLength * Math.sin(radiansTrend * config.trendAngleMultiplier)));
+        // debug('midX: ' + midX + ', midY: ' + midY);
+        logistics.direction = logistics.trend;
         debug('direction: ' + logistics.direction + ' degrees from centerline');
         this.mask(imgMask, midX - parseInt(imgMask.bitmap.width / 2), midY - parseInt(imgMask.bitmap.height / 2), function(errMask, imgMasked) {
           if (errMask) console.error('this.mask(): ' + errMask);

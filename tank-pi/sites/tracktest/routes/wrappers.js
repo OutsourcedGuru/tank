@@ -68,7 +68,7 @@ exports.markThirdSample = function(imgIn, callback) {
     debug('slopeLeft1st: ' + logistics.leftFirstSlopeSegment + ' and slopeLeft2nd: ' + logistics.leftSecondSlopeSegment + ' with difference: ' + logistics.leftDiff);
     logistics.rightFirstSlopeSegment =   parseInt(Math.atan((logistics.nRight2 - logistics.nRight1) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
     logistics.rightSecondSlopeSegment =  parseInt(Math.atan((logistics.nRight3 - logistics.nRight2) / parseInt(logistics.imgHeight * (config.firstY - config.secondY))) * 180 / Math.PI);
-    logistics.rightDiff =                logistics.rightFirstSlopeSegment - logistics.rightSecondSlopeSegment;
+    logistics.rightDiff =                logistics.rightSecondSlopeSegment - logistics.rightFirstSlopeSegment;
     debug('slopeRight1st: ' + logistics.rightFirstSlopeSegment + ' and slopeRight2nd: ' + logistics.rightSecondSlopeSegment + ' with difference: ' + logistics.rightDiff);
     debug('Straight: ' + (Math.abs(logistics.leftDiff + logistics.rightDiff) < 5));
     if (Math.abs(logistics.leftDiff + logistics.rightDiff) < 5) {
@@ -87,13 +87,13 @@ exports.markThirdSample = function(imgIn, callback) {
       logistics.rightGreatSlopeSegment =   parseInt(Math.atan(Math.abs(logistics.nRight1 - logistics.nRight3) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
       debug('slopeGreatLeft: ' + logistics.leftGreatSlopeSegment + ' and slopeGreatRight: ' + logistics.rightGreatSlopeSegment);
       if (logistics.leftGreatSlopeSegment && logistics.rightGreatSlopeSegment) {
-        logistics.trend = (Math.abs(logistics.leftGreatSlopeSegment) < Math.abs(logistics.rightGreatSlopeSegment)) ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
+        logistics.trend = 90 - (Math.abs(logistics.leftGreatSlopeSegment) < Math.abs(logistics.rightGreatSlopeSegment)) ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
       } else {
         // One of them was zero, so use the other
-        logistics.trend = logistics.leftGreatSlopeSegment ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
+        logistics.trend = 90 - logistics.leftGreatSlopeSegment ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment;
       }
     }
-    debug('Trend: ' + logistics.trend + ' degrees from horizontal');
+    debug('Trend: ' + logistics.trend + ' degrees from centerline');
     callback(null, imgOut);
   });
 } // markThirdSample()
