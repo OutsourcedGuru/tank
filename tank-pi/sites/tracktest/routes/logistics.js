@@ -20,3 +20,5 @@ exports.trend =                   undefined;
 exports.direction =               undefined;
 exports.leftGreatSlopeSegment =   undefined;
 exports.rightGreatSlopeSegment =  undefined;
+exports.lastDirection =           undefined;
+exports.trackDataIndex =          undefined;

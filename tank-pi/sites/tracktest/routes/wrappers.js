@@ -4,7 +4,7 @@ var fs =          require('fs');
 var Jimp =        require('jimp');
 var logistics =   require('./logistics');
 var prototypes =  require('./prototypes');
-var serial =      require('./serial')
+var serial =      require('./serial');
 
 /*
 ** These are a series of async.waterfall()—compatible wrappers for the functions
@@ -21,7 +21,31 @@ exports.initFindEdgesGraphic = function(callback) {
 } // initFindEdgesGraphic()
 
 exports.readSnapshot = function(callback) {
-   try {
+  if (config.useDataFolder) {
+    if (logistics.trackDataIndex == undefined || logistics.trackDataIndex == config.dataFolderCount + 1) {
+      logistics.trackDataIndex = 1;
+    }
+    debug('readSnapshot() using data folder');
+    try {
+      path = config.dataFolder + '/' + logistics.trackDataIndex.toString() + '.jpg';
+      debug(path);
+      Jimp.read(path, (errRead, imgOut) => {
+        if (errRead) {console.error('readSnapshot(): ' + errRead); callback(errRead); return;}
+        logistics.sampleX =   0;
+        logistics.imgWidth =  imgOut.bitmap.width;
+        logistics.imgHeight = imgOut.bitmap.height;
+        logistics.sampleY1 =  parseInt(logistics.imgHeight * config.firstY);
+        logistics.sampleY2 =  parseInt(logistics.imgHeight * config.secondY);
+        logistics.sampleY3 =  parseInt(logistics.imgHeight * config.thirdY);
+        callback(null, imgOut);
+        logistics.trackDataIndex++;
+        return;
+      });
+    } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
+  } else {
+    // Read it from the static image, as saved into ./public/images/snapshot.jpg
+    debug('If data folder is turned on, we should not see this.');
+    try {
       Jimp.read(config.fileSnapshot, (errRead, imgOut) => {
         if (errRead) {console.error('readSnapshot(): ' + errRead); callback(errRead); return;}
         logistics.sampleX =   0;
@@ -31,8 +55,10 @@ exports.readSnapshot = function(callback) {
         logistics.sampleY2 =  parseInt(logistics.imgHeight * config.secondY);
         logistics.sampleY3 =  parseInt(logistics.imgHeight * config.thirdY);
         callback(null, imgOut);
+        return;
       });
     } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
+  }
 } // readSnapshot()
 
 exports.markCenter = function(imgIn, callback) {
@@ -84,10 +110,12 @@ exports.markThirdSample = function(imgIn, callback) {
       debug('---Trend [' + logistics.trend + '] over sanity check [' + config.trendSanityCheck + '], trying again---');
       debug('nLeft: ' + logistics.nLeft1 + '/' + logistics.nLeft2 + '/' + logistics.nLeft3 + ', nRight: ' + logistics.nRight1 + '/' + logistics.nRight2 + '/' + logistics.nRight3);
       logistics.leftGreatSlopeSegment =    parseInt(Math.atan(Math.abs(logistics.nLeft1 - logistics.nLeft3) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
-      logistics.rightGreatSlopeSegment =   parseInt(Math.atan(Math.abs(logistics.nRight1 - logistics.nRight3) / parseInt(logistics.imgHeight * (config.firstY - config.thirdY))) * 180 / Math.PI);
+      logistics.rightGreatSlopeSegment =   parseInt(Math.atan(Math.abs(logistics.nRight1 - logistics.nRight3) / parseInt(logistics.imgHeight * (config.thirdY - config.firstY))) * 180 / Math.PI);
       debug('slopeGreatLeft: ' + logistics.leftGreatSlopeSegment + ' and slopeGreatRight: ' + logistics.rightGreatSlopeSegment);
       if (logistics.leftGreatSlopeSegment && logistics.rightGreatSlopeSegment) {
-        logistics.trend = 90 - (Math.abs(logistics.leftGreatSlopeSegment) < Math.abs(logistics.rightGreatSlopeSegment) ? logistics.leftGreatSlopeSegment : logistics.rightGreatSlopeSegment);
+        logistics.trend = 90 - (Math.abs(logistics.leftGreatSlopeSegment) < Math.abs(logistics.rightGreatSlopeSegment) ?
+          ((logistics.rightGreatSlopeSegment < 0) ? parseInt(logistics.leftGreatSlopeSegment / 2) : logistics.leftGreatSlopeSegment) :
+          logistics.rightGreatSlopeSegment);
       } else {
         if (isNaN(logistics.trend)) {
           debug('---Trend [' + logistics.trend + '] == NaN, trying again---');

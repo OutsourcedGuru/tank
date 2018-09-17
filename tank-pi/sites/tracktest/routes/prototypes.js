@@ -38,9 +38,8 @@ var logistics =   require('./logistics');
   }; // markCenter()
 
   Jimp.prototype.markDirection = function(cb) {
-    // Unsure if this should be (90-trend) or half of this angle. Also unsure of whether or not I should be subtracting this from 90.
-    //debug('Trend: ' + parseInt((90 - logistics.trend) / 2) + ' degrees right of centerline');
     // Definitively: The logistics.trend value is the degree from the centerline, as measured at the top.
+    if (logistics.lastDirection == undefined) logistics.lastDirection = logistics.direction;
     try {
       Jimp.read('./public/images/center-mark-mask.jpg', (errRead, imgMask) => {
         if (errRead) console.error('Jimp.read(): ' + errRead);
@@ -49,6 +48,15 @@ var logistics =   require('./logistics');
         var midY =            parseInt((this.bitmap.height / 2) + (-1 * config.trendLineLength * Math.sin(radiansTrend)));
         logistics.direction = 90 - logistics.trend;
         debug('direction: ' + logistics.direction + ' degrees from centerline');
+        if (logistics.direction - logistics.lastDirection > 20) {
+          debug('Wildness detected in steering, titrating that last command...');
+          var diff =      logistics.direction - logistics.lastDirection;
+          var leftTurn =  (diff < 0) || (logistics.direction < 0 && logistics.lastDirection > 0);
+          logistics.direction = (leftTurn) ?
+            parseInt(logistics.direction * 0.75) :
+            parseInt(logistics.direction * 1.25);
+            debug('direction adjusted to: ' + logistics.direction + ' degrees from centerline');
+          }
         this.mask(imgMask, midX - parseInt(imgMask.bitmap.width / 2), midY - parseInt(imgMask.bitmap.height / 2), function(errMask, imgMasked) {
           if (errMask) console.error('this.mask(): ' + errMask);
           cb(null, imgMasked);
@@ -79,10 +87,11 @@ var logistics =   require('./logistics');
                 break;
               }
             }
-            if (nLeft < 30) {
+            if (nLeft < config.centerlineWidth) {
               debug('Left: Trying again since we found centerline');
+              // nLeft = parseInt(this.bitmap.width / 2); // new
               // Try again since it looks like we found the centerline instead
-              for (var i=parseInt(this.bitmap.width / 2) - 40; i>0; i--) {
+              for (var i=parseInt(this.bitmap.width / 2) - config.centerlineWidth; i>0; i--) {
                 colorTest = imgMasked.getPixelColor(i, y).toString(16).substr(0,6);
                 diff = colorDiff(colorTest, config.colorTarget);
                 if (diff < config.colorThreshold) {
@@ -102,10 +111,11 @@ var logistics =   require('./logistics');
                 break;
               }
             }
-            if ((nRight - parseInt(this.bitmap.width / 2)) < 30) {
+            if ((nRight - parseInt(this.bitmap.width / 2)) < config.centerlineWidth) {
               debug('Right: Trying again since we found centerline');
+              // nLeft = this.bitmap.width - 1; // new
               // Try again since it looks like we found the centerline instead
-              for (var i=parseInt(this.bitmap.width / 2) + 40; i<this.bitmap.width; i++) {
+              for (var i=parseInt(this.bitmap.width / 2) + config.centerlineWidth; i<this.bitmap.width; i++) {
                 colorTest = imgMasked.getPixelColor(i, y).toString(16).substr(0,6);
                 diff = colorDiff(colorTest, config.colorTarget);
                 if (diff < config.colorThreshold) {
