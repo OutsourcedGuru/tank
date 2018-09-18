@@ -21,5 +21,8 @@
     </table>
     <p>&nbsp;</p>
     <span id="pauseButton" class="button" onClick='document.location = "/stop";'>Pause</span>
+    <% if (tankIsDown) { %>
+    <span id="nextButton" class="button" onClick='document.location.reload();'>Next Frame</span>
+    <% } %>
   </body>
 </html>

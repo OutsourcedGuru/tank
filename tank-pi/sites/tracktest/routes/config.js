@@ -20,3 +20,4 @@ exports.defaultStraightSpeed =  80;       // 50 is approximately the minimum
 exports.defaultCurveSpeed =     80;       // 80 is approximately the practical minimum
 exports.reloadSeconds =         0;        // set to 3 for a race or 5 for training purposes with a slow default speed
 exports.verbose =               true;     // in serial.js, allows calculations to continue after bStopped has been determined
+exports.tankIsDown =            true;     // set this if you're just developing and the tank is expected to be offline

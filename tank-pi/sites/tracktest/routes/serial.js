@@ -22,7 +22,9 @@ exports.sendStop = function(callback) {
 exports.sendCommand = function(callback) {
   var bStopped = false;
   debug('Finding tank...');
-  dns.lookup(config.tankHostname, function(err) {
+  var host = config.tankHostname;
+  if (config.tankIsDown) host = 'localhost';
+  dns.lookup(host, function(err) {
     if (err) {debug(err); callback(null); return;}
     var w = logistics.imgWidth,   mid_w = w / 2,   mouseOffset_x = 0;
     var h = logistics.imgHeight,  mid_h = h / 2,   mouseOffset_y = 0;
