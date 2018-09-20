@@ -1,10 +1,11 @@
+var config =    require('../config');
 var express =   require('express');
 var raspi =     require('raspi');
 var Serial =    require('raspi-serial').Serial;
 var router =    express.Router();
 
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: config.title, hostname: config.tankHostname, port: config.tankPort, webcamUrl: config.tankWebcam });
 });
 
 router.get('/api/command', function(req, res, next) {
@@ -20,7 +21,7 @@ router.get('/api/command', function(req, res, next) {
         'L' + parseInt(Math.round(parseFloat(req.query.left))).toString() +
         ' R' + parseInt(Math.round(parseFloat(req.query.right))).toString() + '\n'; 
       portArduino.write(strCommand);
-      console.log('Sent: ' + strCommand);
+      console.log('Sent: ' + strCommand.slice(0, -1));
       res.json({"status": "ok", "left": req.query.left, "right": req.query.right});
     });
   })

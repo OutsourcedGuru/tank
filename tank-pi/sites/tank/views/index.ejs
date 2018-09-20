@@ -31,7 +31,7 @@ function handleClick() {
   ** --------------------------------------------------------------------
   */
   if (Math.abs(x) < 80 && Math.abs(y) < 80) {
-    var strURL = 'http://tank.local:3000/api/command?left=0&right=0';
+    var strURL = 'http://<%=hostname%>:<%=port%>/api/command?left=0&right=0';
     document.getElementById('commands').src = strURL;
     return true;
   }
@@ -43,7 +43,7 @@ function handleClick() {
   if (x == 0 && Math.abs(y)) {
     nLeft = nRight = Math.abs(y);
     if (y > 0) {nLeft *= -1; nRight *= -1;}
-    var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
+    var strURL = 'http://<%=hostname%>:<%=port%>/api/command?left=' + nLeft + '&right=' + nRight;
     document.getElementById('commands').src = strURL;
     return true;
   }
@@ -60,7 +60,7 @@ function handleClick() {
     } else {
       if (x > 0) {nLeft = 255; nRight =    0;} else {nLeft =    0; nRight = 255;}
     }
-    var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
+    var strURL = 'http://<%=hostname%>:<%=port%>/api/command?left=' + nLeft + '&right=' + nRight;
     document.getElementById('commands').src = strURL;
     return true;
   }
@@ -90,7 +90,7 @@ function handleClick() {
       nRight =   -1 * y;
       nLeft =    parseInt(-1 * y * (100 - angleArcsin) / 100);
     }
-    var strURL = 'http://tank.local:3000/api/command?left=' + nLeft + '&right=' + nRight;
+    var strURL = 'http://<%=hostname%>:<%=port%>/api/command?left=' + nLeft + '&right=' + nRight;
     document.getElementById('commands').src = strURL;
     return true;
   }
@@ -100,12 +100,12 @@ function handleClick() {
 }
 </script>
   </head>
-  <body style='margin:0; padding:0; background-image: url("http://tank.local:8080/?action=stream"); background-repeat: no-repeat; background-size: cover;'>
+  <body style='margin:0; padding:0; background-image: url("<%=webcamUrl%>"); background-repeat: no-repeat; background-size: cover;'>
     <img usemap="#controlmap" style='width: 100%; opacity: 0.80; filter:alpha(opacity=50);' src="/images/TankAppDashboard.png"></div>
     <iframe id="commands" name="commands" src="" width="35%" height="60px" style="position: absolute; bottom: 3px; left: 1px; color: white"></iframe>
     <div style='color: white; position: absolute; bottom: 80px; left: 3px;'>Touch the upper half to move forward</div>
     <map name="controlmap">
-      <!--area shape="circle" coords="495,405,125" href="#" onClick="document.getElementById('commands').src='http://tank.local:3000/api/command?left=0&right=0';", title="Stop" /-->
+      <area shape="circle" coords="495,405,125" href="#" onClick="document.getElementById('commands').src='http://<%=hostname%>:<%=port%>/api/command?left=0&right=0';", title="Stop" />
       <area shape="default" href="#" onClick="handleClick()" />
     </map>
   </body>
