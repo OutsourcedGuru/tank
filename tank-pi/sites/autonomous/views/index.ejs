@@ -2,24 +2,31 @@
 <html>
   <head>
     <title><%= title %></title>
+    <% if (reload > 0) { %>
+    <meta http-equiv="refresh" content="<%= reload%>; url=/">
+    <% } %>
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body style='margin:0; padding:0;'>
     <h1><%= title %></h1>
     <table border="1">
       <tr>
-        <th width="640px">Before:</th><th width="10px"></th><th width="640px">After:</th>
+        <th width="320px">Before:</th><th width="10px"></th><th width="320px">After:</th>
       </tr>
       <tr>
-        <td><img src="/images/snapshot.jpg"></td>
+        <% if (tankIsDown) {%>
+          <td><img src="/images/data/<%= sequence %>.jpg" width="320" height="240"></td>
+        <% } else { %>
+          td><img src="/images/snapshot.jpg" width="320" height="240"></td>
+        <% } %>
         <td>&nbsp;</td>
-        <td height="480px"><img src="/images/find-edges.jpg"></td>
-      </tr>
-      <tr>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td><img src="/images/crop-midway.jpg"></td>
+        <td height="240px"><img src="/images/find-edges.jpg" width="320" height="240"></td>
       </tr>
     </table>
+    <p>&nbsp;</p>
+    <span id="pauseButton" class="button" onClick='document.location = "/stop";'>Pause</span>
+    <% if (tankIsDown) { %>
+    <span id="nextButton" class="button" onClick='document.location.reload();'>Next Frame</span>
+    <% } %>
   </body>
 </html>

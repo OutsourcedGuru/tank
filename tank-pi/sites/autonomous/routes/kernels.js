@@ -12,7 +12,6 @@ exports.blur =             [[ 0, 0.5,  0],  [0.5,  -1, 0.5],  [ 0, 0.5,  0]];
 exports.increaseContrast = [[ 0,   0,  0],  [  0,   2,   0],  [ 0,   0,  0]];
 exports.decreaseContrast = [[ 0,   0,  0],  [  0, 0.5,   0],  [ 0,   0,  0]];
 
-
 /*
 Find Edges
 Uses a Sobel edge detector to highlight sharp changes in intensity in the active
