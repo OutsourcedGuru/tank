@@ -1,8 +1,10 @@
 .DS_Store
 node_modules
 *.log
-tank-pi/sites/autonomous/public/images/snapshot.jpg
-tank-pi/sites/autonomous/public/images/find-edges.jpg
+snapshot.jpg
+find-edges.jpg
 crop-midway.jpg
 test-slice.jpg
+stop.flag
+stopping.flag
 
