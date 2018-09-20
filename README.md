@@ -51,7 +51,7 @@ This is a limited version of the schematic in that Fritzing doesn't yet have the
 
 |Description|Version|Author|Last Update|
 |:---|:---|:---|:---|
-|tank|v1.0.2|OutsourcedGuru|September 6, 2018|
+|tank|v1.1.6|OutsourcedGuru|September 20, 2018|
 
 |Donate||Cryptocurrency|
 |:-----:|---|:--------:|
