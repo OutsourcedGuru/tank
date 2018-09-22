@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <% if (reload > 0) { %>
+    <meta http-equiv="refresh" content="<%= reload%>; url=/">
+    <% } %>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body style='margin:0; padding:0;'>
+    <h1><%= title %></h1>
+    <table border="1">
+      <tr><th width="320px">Snapshot:</th></tr>
+      <tr><td><img src="/images/data/<%= sequence %>.jpg" width="320" height="240"></td></tr>
+    </table>
+    <p>&nbsp;</p>
+    <span id="pauseButton" class="button" onClick='document.location = "/stop";'>Pause</span>
+  </body>
+</html>
