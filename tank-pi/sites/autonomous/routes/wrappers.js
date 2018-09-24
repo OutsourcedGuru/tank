@@ -22,7 +22,7 @@ exports.initFindEdgesGraphic = function(callback) {
 
 exports.readSnapshot = function(callback) {
   if (config.useDataFolder) {
-    if (logistics.trackDataIndex == undefined || logistics.trackDataIndex == config.dataFolderCount + 1) {
+    if (logistics.trackDataIndex == 0 || logistics.trackDataIndex == config.dataFolderCount + 1) {
       logistics.trackDataIndex = 1;
     }
     debug('readSnapshot() using data folder');
@@ -60,6 +60,18 @@ exports.readSnapshot = function(callback) {
     } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
   }
 } // readSnapshot()
+
+exports.perspective = function(imgIn, callback) {
+  imgIn.perspective(function(err, imgOut) {
+    callback(null, imgOut);
+  });
+} // perspective()
+
+exports.chopTop = function(imgIn, callback) {
+  imgIn.chopTop(function(err, imgOut) {
+    callback(null, imgOut);
+  });
+} // chopTop()
 
 exports.markCenter = function(imgIn, callback) {
   imgIn.markCenter(function(err, imgOut) {

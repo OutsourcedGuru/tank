@@ -12,17 +12,19 @@ router.get('/', function(req, res, next) {
   async.waterfall([
     wrappers.initFindEdgesGraphic,
     wrappers.readSnapshot,
-    wrappers.markCenter,
-    wrappers.markFirstSample,
-    wrappers.markSecondSample,
-    wrappers.markThirdSample,
-    wrappers.markDirection,
-    wrappers.sendCommand,
+    wrappers.chopTop,
+    wrappers.perspective,
+    // wrappers.markCenter,
+    // wrappers.markFirstSample,
+    // wrappers.markSecondSample,
+    // wrappers.markThirdSample,
+    // wrappers.markDirection,
+    // wrappers.sendCommand,
     wrappers.writeOutput
     ], function(errWaterfall, result) {
       if (errWaterfall) {console.error('Waterfall returned err: ', errWaterfall);}
       if (result) {debug('Waterfall result: ' + result);}
-      res.render('index', {title: config.title, reload: config.reloadSeconds, tankIsDown: config.tankIsDown, sequence: logistics.trackDataIndex});
+      res.render('index', {title: config.title, reload: config.reloadSeconds, tankIsDown: config.tankIsDown, sequence: (logistics.trackDataIndex) ? logistics.trackDataIndex - 1 : 0});
     } // callback from async.waterfall()
   )   // async.waterfall()
 });   // get('/')
@@ -40,6 +42,7 @@ router.get('/start', function(req, res, next) {
 });   // get('/start')
 
 router.get('/stop', function(req, res, next) {
+  if (config.tankIsDown) {res.render('stop', {title: config.title + ' - [Stopped]', url: config.tankStreamURL}); return;}
   serial.sendStop(function(err) {
     res.render('stop', {title: config.title + ' - [Stopped]', url: config.tankStreamURL});
   })
