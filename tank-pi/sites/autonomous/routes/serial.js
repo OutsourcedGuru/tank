@@ -1,5 +1,5 @@
 var config =      require('./config');
-var debug =       require('debug')('serial:');
+var debug =       require('debug')('....serial:');
 var dns =         require('dns');
 var fs =          require('fs');
 var http =        require('http');

@@ -1,6 +1,6 @@
 var async =       require('async');
 var config =      require('./config');
-var debug =       require('debug')('router:');
+var debug =       require('debug')('....router:');
 var express =     require('express');
 var fs =          require('fs');
 var logistics =   require('./logistics');
@@ -14,12 +14,15 @@ router.get('/', function(req, res, next) {
     wrappers.readSnapshot,
     wrappers.chopTop,
     wrappers.perspective,
-    // wrappers.markCenter,
+    wrappers.sharpen,
+    wrappers.sharpen,
+    wrappers.markCenter,
+    wrappers.polarTrend,
     // wrappers.markFirstSample,
     // wrappers.markSecondSample,
     // wrappers.markThirdSample,
-    // wrappers.markDirection,
-    // wrappers.sendCommand,
+    wrappers.markDirection,
+    wrappers.sendCommand,
     wrappers.writeOutput
     ], function(errWaterfall, result) {
       if (errWaterfall) {console.error('Waterfall returned err: ', errWaterfall);}
@@ -42,7 +45,7 @@ router.get('/start', function(req, res, next) {
 });   // get('/start')
 
 router.get('/stop', function(req, res, next) {
-  if (config.tankIsDown) {res.render('stop', {title: config.title + ' - [Stopped]', url: config.tankStreamURL}); return;}
+  if (config.tankIsDown) {res.render('stop', {title: config.title + ' - [Stopped]', url: 'images/no-image.jpg'}); return;}
   serial.sendStop(function(err) {
     res.render('stop', {title: config.title + ' - [Stopped]', url: config.tankStreamURL});
   })

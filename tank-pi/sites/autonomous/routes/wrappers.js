@@ -1,5 +1,5 @@
 var config =      require('./config');
-var debug =       require('debug')('wrappers:');
+var debug =       require('debug')('..wrappers:');
 var fs =          require('fs');
 var Jimp =        require('jimp');
 var logistics =   require('./logistics');
@@ -73,11 +73,23 @@ exports.chopTop = function(imgIn, callback) {
   });
 } // chopTop()
 
+exports.sharpen = function(imgIn, callback) {
+  imgIn.sharpen(function(err, imgOut) {
+    callback(null, imgOut);
+  });
+} // sharpen()
+
 exports.markCenter = function(imgIn, callback) {
   imgIn.markCenter(function(err, imgOut) {
     callback(null, imgOut);
   });
 } // markCenter()
+
+exports.polarTrend = function(imgIn, callback) {
+  imgIn.polarTrend(function(err, imgOut) {
+    callback(null, imgOut);
+  });
+} // polarTrend()
 
 exports.markFirstSample = function(imgIn, callback) {
   imgIn.markSample(logistics.sampleX, logistics.sampleY1, function(err, imgOut, nLeft, nRight) {
@@ -153,7 +165,7 @@ exports.markThirdSample = function(imgIn, callback) {
         }
       }
     }
-    debug('Trend: ' + logistics.trend + ' degrees from horizontal');
+    debug('Trend: ' + logistics.trend + ' degrees from centerline');
     callback(null, imgOut);
   });
 } // markThirdSample()
