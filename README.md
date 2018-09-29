@@ -17,7 +17,7 @@ A serial link and interface connects the two separate systems which all sit atop
 [x] In the second phase, a NodeJS web interface on the Pi will allow both the webcam stream to be viewed plus to control the tank, presumably from an iPhone.
 
 ### Phase 3
-[ ] In the third phase, individual frames from the camera will be analyzed to allow a NodeJS program to automamously steer the tank around a course.
+[x] In the third phase, individual frames from the camera will be analyzed to allow a NodeJS program to automamously steer the tank around a course.
 
 ## Parts
 
