@@ -4,14 +4,25 @@ var fs =          require('fs');
 var Jimp =        require('jimp');
 var logistics =   require('./logistics');
 var prototypes =  require('./prototypes');
+var request =     require('request');
 var serial =      require('./serial');
 
 /*
-** These are a series of async.waterfall()—compatible wrappers for the functions
-** found in the prototypes.js file itself. The async module requires a particular
-** push/pull model of getting/giving parameters so it was necessary to build these
-** wrapper functions.
+** These are a series of async.waterfall()—compatible wrappers for a variety
+** of functions. The async module requires a particular push/pull model of
+** getting/giving parameters so it was necessary to build these wrapper functions.
 */
+
+var download = function(uri, filename, callback) {
+  request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+};
+
+exports.initSnapshotGraphic = function(callback) {
+  fs.copyFile(config.fileNoImage, config.fileSnapshot, function(errCopy) {
+    if (errCopy) {console.error('initSnapshotGraphic(): ' + errCopy); callback(errCopy); return}
+    callback(null);
+  });
+} // initSnapshotGraphic()
 
 exports.initFindEdgesGraphic = function(callback) {
   fs.copyFile(config.fileNoImage, config.fileFindEdges, function(errCopy) {
@@ -43,23 +54,66 @@ exports.readSnapshot = function(callback) {
       });
     } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
   } else {
-    // Read it from the static image, as saved into ./public/images/snapshot.jpg
-    debug('If data folder is turned on, we should not see this.');
-    try {
-      Jimp.read(config.fileSnapshot, (errRead, imgOut) => {
-        if (errRead) {console.error('readSnapshot(): ' + errRead); callback(errRead); return;}
-        logistics.sampleX =   0;
-        logistics.imgWidth =  imgOut.bitmap.width;
-        logistics.imgHeight = imgOut.bitmap.height;
-        logistics.sampleY1 =  parseInt(logistics.imgHeight * config.firstY);
-        logistics.sampleY2 =  parseInt(logistics.imgHeight * config.secondY);
-        logistics.sampleY3 =  parseInt(logistics.imgHeight * config.thirdY);
-        callback(null, imgOut);
-        return;
-      });
-    } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
-  }
-} // readSnapshot()
+    // We are not using the data folder
+    if (config.tankIsDown) {
+      // Read it from the static image, as saved into ./public/images/snapshot.jpg
+      try {
+        Jimp.read(config.fileSnapshot, (errRead, imgOut) => {
+          if (errRead) {console.error('readSnapshot(): ' + errRead); callback(errRead); return;}
+          logistics.sampleX =   0;
+          logistics.imgWidth =  imgOut.bitmap.width;
+          logistics.imgHeight = imgOut.bitmap.height;
+          logistics.sampleY1 =  parseInt(logistics.imgHeight * config.firstY);
+          logistics.sampleY2 =  parseInt(logistics.imgHeight * config.secondY);
+          logistics.sampleY3 =  parseInt(logistics.imgHeight * config.thirdY);
+          callback(null, imgOut);
+          return;
+        });
+      } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
+    } else {
+      // We are not using the data folder and the tank is up
+      debug('Taking the snapshot...');
+      download(config.tankURL, config.fileSnapshot, function(err) {
+        if (err) {debug(err);}
+        try {
+          Jimp.read(config.fileSnapshot, (errRead, imgOut) => {
+            if (errRead) {console.error('readSnapshot(): ' + errRead); callback(errRead); return;}
+            logistics.sampleX =   0;
+            logistics.imgWidth =  imgOut.bitmap.width;
+            logistics.imgHeight = imgOut.bitmap.height;
+            logistics.sampleY1 =  parseInt(logistics.imgHeight * config.firstY);
+            logistics.sampleY2 =  parseInt(logistics.imgHeight * config.secondY);
+            logistics.sampleY3 =  parseInt(logistics.imgHeight * config.thirdY);
+            debug('Snapshot taken');
+            callback(null, imgOut);
+            return;
+          });
+        } catch(err) {console.error('readSnapshot() -> catch(): ' + err); callback(err); return;}
+      }); // download()
+    }     // else from if (config.tankIsDown)
+  }       // else from if (config.useDataFolder)
+}         // readSnapshot()
+
+/*
+** These are a series of async.waterfall()—compatible wrappers for the functions
+** found in the serial.js file itself. The async module requires a particular
+** push/pull model of getting/giving parameters so it was necessary to build these
+** wrapper functions.
+*/
+
+exports.sendCommand = function(image, callback) {
+  debug('sendCommand()');
+  serial.sendCommand(function(err) {
+    callback(null, image);
+  });
+} // sendCommand()
+
+/*
+** These are a series of async.waterfall()—compatible wrappers for the functions
+** found in the prototypes.js file itself. The async module requires a particular
+** push/pull model of getting/giving parameters so it was necessary to build these
+** wrapper functions.
+*/
 
 exports.perspective = function(imgIn, callback) {
   imgIn.perspective(function(err, imgOut) {
@@ -173,12 +227,6 @@ exports.markThirdSample = function(imgIn, callback) {
 exports.markDirection = function(imgIn, callback) {
   imgIn.markDirection(function(err, imgOut) {
     callback(null, imgOut);
-  });
-} // markDirection()
-
-exports.sendCommand = function(image, callback) {
-  serial.sendCommand(function(err) {
-    callback(null, image);
   });
 } // markDirection()
 

@@ -315,7 +315,7 @@ function squared(n)   {return Math.pow(n,2)};
           }       // finally
         });       // Jimp.read()
       });         // Jimp.read()
-    } catch(err) {console.error('polarTrend() Jimp.read() -> catch(): ' + err); cb(err);};
+    } catch(err) {console.error('polarTrend() Jimp.read() -> catch(): ' + err); /*cb(err);*/};
   };              // polarTrend
 
 }());

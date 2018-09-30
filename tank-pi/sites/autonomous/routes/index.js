@@ -10,6 +10,7 @@ var router =      express.Router();
 
 router.get('/', function(req, res, next) {
   async.waterfall([
+    wrappers.initSnapshotGraphic,
     wrappers.initFindEdgesGraphic,
     wrappers.readSnapshot,
     wrappers.chopTop,
@@ -18,9 +19,7 @@ router.get('/', function(req, res, next) {
     wrappers.sharpen,
     wrappers.markCenter,
     wrappers.polarTrend,
-    // wrappers.markFirstSample,
-    // wrappers.markSecondSample,
-    // wrappers.markThirdSample,
+    // versus this version instead: wrappers.markFirstSample, wrappers.markSecondSample, wrappers.markThirdSample,
     wrappers.markDirection,
     wrappers.sendCommand,
     wrappers.writeOutput
@@ -46,9 +45,8 @@ router.get('/start', function(req, res, next) {
 
 router.get('/stop', function(req, res, next) {
   if (config.tankIsDown) {res.render('stop', {title: config.title + ' - [Stopped]', url: 'images/no-image.jpg'}); return;}
-  serial.sendStop(function(err) {
-    res.render('stop', {title: config.title + ' - [Stopped]', url: config.tankStreamURL});
-  })
+  res.render('stop', {title: config.title + ' - [Stopped]', url: config.tankStreamURL});
+  setTimeout(function() {serial.sendStop(function(){})}, (config.reloadSeconds) ? (config.reloadSeconds * 1000) : 1000);
 });   // get('/stop')
 
 module.exports = router;

@@ -6,22 +6,22 @@ var http =        require('http');
 var logistics =   require('./logistics');
 
 exports.sendStop = function(callback) {
-  debug('Sending stop command...');
+  debug('sendStop()...');
   var options = {hostname: 'tank.local',  port: config.tankPort,  path: '/api/command?left=0&right=0',  method: 'GET',  timeout: 5000};
   try {
     http.get(options, function(resp) {
       resp.setEncoding('utf8');
       var data = '';
       resp.on('data',   function(chunk)  {data += chunk;});
-      resp.on('error',  function(err)    {debug(err); callback(null); return;});
-      resp.on('end',    function()       {debug(data); callback(null); return;});
+      resp.on('error',  function(err)    {debug(err); return;});
+      resp.on('end',    function()       {debug(data); return;});
     });
-  } catch(err) {debug(err); callback(null); return;}
+  } catch(err) {debug(err); return;} finally { callback(null); }
 } // sendStop()
 
 exports.sendCommand = function(callback) {
   var bStopped = false;
-  debug('Finding tank...');
+  debug('sendCommand() Finding tank...');
   var host = config.tankHostname;
   if (config.tankIsDown) host = 'localhost';
   dns.lookup(host, function(err) {
@@ -31,89 +31,96 @@ exports.sendCommand = function(callback) {
     var options = {hostname: 'tank.local',  port: config.tankPort,  path: '',  method: 'GET',  timeout: 5000};
     /*
     ** --------------------------------------------------------------------
-    ** Stop [x] Reasonably done, but probably needs to be mapped
+    ** Stop because button was pressed (earlier or just now)
     ** --------------------------------------------------------------------
     */
-    fs.access(process.cwd() + '/stop.flag', fs.constants.F_OK, function(err1) {
-      if (err1 == null) {
+    var EXISTS = null;
+    fs.access(process.cwd() + '/stop.flag', fs.constants.F_OK, function(outcomeReadStopFlag) {
+      if (outcomeReadStopFlag == EXISTS) {
         bStopped = true;
         debug('┌───────────────────────────────────────────────────────┐');
         debug('│   Tank is stopped. Press "Start Race" button to go.   │');
         debug('└───────────────────────────────────────────────────────┘');
         if (!config.verbose) {
+          debug('sendCommand() doing callback at if (!config.verbose)...');
           callback(null);
           return;
         }
-      }
-      fs.access(process.cwd() + '/stopping.flag', fs.constants.F_OK, function(err2) {
-        if (err2 == null) {
-          debug('Creating a stop.flag');
-          // Upgrade from stopping.flag to stop.flag so that we only trigger once
-          fs.closeSync(fs.openSync(process.cwd() + '/stop.flag', 'w'));
-          fs.unlinkSync(process.cwd() + '/stopping.flag');
-          // Send the stop command to the tank
-          options.path = '/api/command?left=0&right=0';
-          try {
-            http.get(options, function(resp) {
-              resp.setEncoding('utf8');
-              var data = '';
-              resp.on('data',   function(chunk)  {data += chunk;});
-              resp.on('error',  function(err)    {debug(err); callback(null); return;});
-              resp.on('end',    function()       {debug(data); callback(null); return;});
-            });
-          } catch(err) {debug(err); callback(null); return;}
-        } else {
-          /*
-          ** --------------------------------------------------------------------
-          ** Straight-driving [ ] Needs to be mapped into 0-255 (overshooting)
-          ** --------------------------------------------------------------------
-          */
-          if (Math.abs(logistics.direction) < 4) {
-            nLeft = nRight = config.defaultStraightSpeed;
-            options.path = '/api/command?left=' + nLeft + '&right=' + nRight;
-            debug('path: ' + options.path);
-            if (!bStopped) {
-              try {
-                http.get(options, function(resp) {
-                  resp.setEncoding('utf8');
-                  var data = '';
-                  resp.on('data',   function(chunk)  {data += chunk;});
-                  resp.on('error',  function(err)    {debug(err); callback(null); return;});
-                  resp.on('end',    function()       {debug(data); callback(null); return;});
-                });
-              } catch(err) {debug(err); callback(null); return;}
-            } else {callback(null); return;}
-          }
-          /*
-          ** --------------------------------------------------------------------
-          ** Gradual turns
-          ** --------------------------------------------------------------------
-          */
-          debug('Gradual turn with direction: ' + logistics.direction + ' degrees from centerline');
-          if (logistics.direction > 0) {
-            debug('QI');
-            nLeft =    config.defaultCurveSpeed;
-            nRight =   parseInt(nLeft * ((100 - logistics.direction) / 100));
-          } else {
-            debug('QIV');
-            nRight =   config.defaultCurveSpeed;
-            nLeft =    parseInt(nRight * ((100 + logistics.direction) / 100));
-          }
-          options.path = '/api/command?left=' + nLeft + '&right=' + nRight;
-          debug('path: ' + options.path);
-          if (!bStopped) {
+      } else {
+        // The stop flag does not exist
+        fs.access(process.cwd() + '/stopping.flag', fs.constants.F_OK, function(outcomeReadStoppingFlag) {
+          if (outcomeReadStoppingFlag == EXISTS) {
+            debug('Creating a stop.flag');
+            // Upgrade from stopping.flag to stop.flag so that we only trigger once
+            fs.closeSync(fs.openSync(process.cwd() + '/stop.flag', 'w'));
+            fs.unlinkSync(process.cwd() + '/stopping.flag');
+            // Send the stop command to the tank
+            options.path = '/api/command?left=0&right=0';
             try {
               http.get(options, function(resp) {
                 resp.setEncoding('utf8');
                 var data = '';
                 resp.on('data',   function(chunk)  {data += chunk;});
-                resp.on('error',  function(err)    {debug(err); callback(null); return;});
-                resp.on('end',    function()       {debug(data); callback(null); return;});
+                resp.on('error',  function(err)    {debug(err); return;});
+                resp.on('end',    function()       {debug(data); return;});
               });
-            } catch(err) {debug(err); callback(null); return;}
-          } else {callback(null); return;}
-        }  // else from fs.access() stopping.flag
-      });  // fs.access() stopping.flag
-    });    // fs.access() stop.flag
-  });      // dns.lookup()
-}          // sendCommand()
+            } catch(err) {debug(err); return;} finally { debug('sendCommand() in callback() due to stopping flag'); callback(null); }
+          } else {
+            // The stopping flag does not exist
+            /*
+            ** --------------------------------------------------------------------
+            ** Straight-driving [ ] Needs to be mapped into 0-255 (overshooting)
+            ** --------------------------------------------------------------------
+            */
+            if (Math.abs(logistics.direction) < 4) {
+              nLeft = nRight = config.defaultStraightSpeed;
+              options.path = '/api/command?left=' + nLeft + '&right=' + nRight;
+              debug('straight path: ' + options.path); // <--------------------
+              if (!bStopped) {
+                try {
+                  http.get(options, function(resp) {
+                    resp.setEncoding('utf8');
+                    var data = '';
+                    resp.on('data',   function(chunk)  {data += chunk;});
+                    resp.on('error',  function(err)    {debug(err); return;});
+                    resp.on('end',    function()       {debug(data); return;});
+                  });
+                } catch(err) {debug(err); return;} finally { callback(null); }
+              } else {callback(null); return;}
+            } else {
+              // Not straight path
+              /*
+              ** --------------------------------------------------------------------
+              ** Gradual turns
+              ** --------------------------------------------------------------------
+              */
+              debug('Gradual turn with direction: ' + logistics.direction + ' degrees from centerline');
+              if (logistics.direction > 0) {
+                debug('QI');
+                nLeft =    config.defaultCurveSpeed;
+                nRight =   parseInt(nLeft * ((100 - logistics.direction) / 100));
+              } else {
+                debug('QIV');
+                nRight =   config.defaultCurveSpeed;
+                nLeft =    parseInt(nRight * ((100 + logistics.direction) / 100));
+              }
+              options.path = '/api/command?left=' + nLeft + '&right=' + nRight;
+              debug('gradual turn path: ' + options.path); // <--------------------
+              if (!bStopped) {
+                try {
+                  http.get(options, function(resp) {
+                    resp.setEncoding('utf8');
+                    var data = '';
+                    resp.on('data',   function(chunk)  {data += chunk;});
+                    resp.on('error',  function(err)    {debug(err); return;});
+                    resp.on('end',    function()       {debug(data); return;});
+                  });
+                } catch(err) {debug(err); return;} finally { callback(null); }
+              } else {callback(null); return;}
+            } // else from if (Math.abs(logistics.direction) < 4)
+          }   // else from if (outcomeReadStoppingFlag == EXISTS)
+        });   // fs.access() stopping.flag
+      }       // else from if (outcomeReadStopFlag == EXISTS)
+    });       // fs.access() stop.flag
+  });         // dns.lookup()
+}             // sendCommand()
