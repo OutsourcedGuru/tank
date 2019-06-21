@@ -20,15 +20,15 @@ exports.sendStop = function(callback) {
 } // sendStop()
 
 exports.sendCommand = function(callback) {
+  if (config.tankIsDown) {callback(null); return;}
   var bStopped = false;
   debug('sendCommand() Finding tank...');
-  var host = config.tankHostname;
-  if (config.tankIsDown) host = 'localhost';
+  var host = config.tankIsDown ? 'localhost' : config.tankHostname;
   dns.lookup(host, function(err) {
     if (err) {debug(err); callback(null); return;}
     var w = logistics.imgWidth,   mid_w = w / 2,   mouseOffset_x = 0;
     var h = logistics.imgHeight,  mid_h = h / 2,   mouseOffset_y = 0;
-    var options = {hostname: 'tank.local',  port: config.tankPort,  path: '',  method: 'GET',  timeout: 5000};
+    var options = {hostname: (config.tankIsDown ? 'localhost' : 'tank.local'),  port: config.tankPort,  path: '',  method: 'GET',  timeout: 5000};
     /*
     ** --------------------------------------------------------------------
     ** Stop because button was pressed (earlier or just now)

@@ -18,8 +18,7 @@ router.get('/', function(req, res, next) {
     wrappers.sharpen,
     wrappers.sharpen,
     wrappers.markCenter,
-    wrappers.polarTrend,
-    // versus this version instead: wrappers.markFirstSample, wrappers.markSecondSample, wrappers.markThirdSample,
+    wrappers.polarTrend,         // versus this version instead: wrappers.markFirstSample, wrappers.markSecondSample, wrappers.markThirdSample,
     wrappers.markDirection,
     wrappers.sendCommand,
     wrappers.writeOutput
